@@ -1,0 +1,65 @@
+<div class="page-header">
+  <div>
+    <h1>Securities</h1>
+    <div class="subtitle">Share classes available for buy/sell orders</div>
+  </div>
+  <button class="btn btn-primary" (click)="showForm = !showForm">
+    {{ showForm ? 'Cancel' : '+ New security' }}
+  </button>
+</div>
+
+<div class="error-banner" *ngIf="error">{{ error }}</div>
+
+<div class="card" *ngIf="showForm">
+  <h2>New security</h2>
+  <div class="form-grid">
+    <div class="field">
+      <label>Company</label>
+      <select [(ngModel)]="form.companyId">
+        <option value="" disabled selected>Select a company</option>
+        <option *ngFor="let c of companies" [value]="c.id">{{ c.legalName }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Share class (optional)</label>
+      <input [(ngModel)]="form.shareClass" placeholder="Equity" />
+    </div>
+    <div class="field">
+      <label>ISIN (optional)</label>
+      <input [(ngModel)]="form.isin" placeholder="INE000A00000" />
+    </div>
+    <div class="field">
+      <label>Reference price (optional)</label>
+      <input type="number" [(ngModel)]="form.referencePrice" placeholder="1250" />
+    </div>
+  </div>
+  <div class="actions-row">
+    <button class="btn btn-primary" [disabled]="submitting || !form.companyId" (click)="submit()">
+      Save security
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <table *ngIf="securities.length; else empty">
+    <thead>
+      <tr>
+        <th>Company</th>
+        <th>Share class</th>
+        <th>ISIN</th>
+        <th class="num">Reference price</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of securities">
+        <td>{{ s.company.legalName }}</td>
+        <td>{{ s.shareClass || s.securityType }}</td>
+        <td>{{ s.isin || '—' }}</td>
+        <td class="num">{{ s.referencePrice ?? '—' }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <ng-template #empty>
+    <div class="empty-state" *ngIf="!loading">No securities yet — add one under a company to start creating orders.</div>
+  </ng-template>
+</div>

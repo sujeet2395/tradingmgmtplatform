@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------
+# Merge these keys into your existing application.yml (or the
+# equivalent application.properties). Replace the datasource
+# credentials with your own; everything else works out of the box.
+# ---------------------------------------------------------------------
+spring:
+  application:
+    name: tradingmgmt
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tradingmgmt
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: validate   # schema is owned by Flyway, not Hibernate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+app:
+  storage:
+    dir: ./uploads
+
+logging:
+  level:
+    #root: DEBUG
+    swagger: DEBUG
+    #com.learn.tradingmgmt: DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html

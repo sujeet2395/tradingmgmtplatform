@@ -1,0 +1,52 @@
+<div class="page-header">
+  <div>
+    <h1>Companies</h1>
+    <div class="subtitle">Unlisted companies whose shares are tracked on this platform</div>
+  </div>
+  <button class="btn btn-primary" (click)="showForm = !showForm">
+    {{ showForm ? 'Cancel' : '+ New company' }}
+  </button>
+</div>
+
+<div class="error-banner" *ngIf="error">{{ error }}</div>
+
+<div class="card" *ngIf="showForm">
+  <h2>New company</h2>
+  <div class="form-grid">
+    <div class="field">
+      <label>Legal name</label>
+      <input [(ngModel)]="form.legalName" placeholder="ABC Ltd" />
+    </div>
+    <div class="field">
+      <label>CIN (optional)</label>
+      <input [(ngModel)]="form.cin" placeholder="U12345DL2020PLC000001" />
+    </div>
+  </div>
+  <div class="actions-row">
+    <button class="btn btn-primary" [disabled]="submitting || !form.legalName.trim()" (click)="submit()">
+      Save company
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <table *ngIf="companies.length; else empty">
+    <thead>
+      <tr>
+        <th>Legal name</th>
+        <th>CIN</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let company of companies">
+        <td>{{ company.legalName }}</td>
+        <td>{{ company.cin || '—' }}</td>
+        <td>{{ company.status }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <ng-template #empty>
+    <div class="empty-state" *ngIf="!loading">No companies yet — add one to start listing its securities.</div>
+  </ng-template>
+</div>

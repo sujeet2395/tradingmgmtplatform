@@ -1,0 +1,6 @@
+package com.learn.tradingmgmt.entity.enums;
+
+public enum PaymentEventType {
+    CHEQUE_RECEIVED, CHEQUE_DEPOSITED, EVIDENCE_UPLOADED, CHEQUE_CLEARED,
+    PAYMENT_VERIFIED, PAYMENT_FAILED, PAYMENT_CANCELLED
+}

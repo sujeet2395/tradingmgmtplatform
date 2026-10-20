@@ -1,0 +1,62 @@
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="subtitle">Buy and sell order activity across all companies</div>
+  </div>
+  <a routerLink="/orders/new" class="btn btn-primary">+ New order</a>
+</div>
+
+<div class="error-banner" *ngIf="error">{{ error }}</div>
+
+<div class="stat-grid" *ngIf="!loading">
+  <div class="stat-card">
+    <div class="stat-value">{{ orders.length }}</div>
+    <div class="stat-label">Total orders</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ openOrders }}</div>
+    <div class="stat-label">Awaiting review</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ confirmedOrders }}</div>
+    <div class="stat-label">Confirmed, in settlement</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ rejectedOrders }}</div>
+    <div class="stat-label">Rejected or cancelled</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Recent orders</h2>
+    <a routerLink="/orders">View all</a>
+  </div>
+
+  <table *ngIf="recentOrders.length; else empty">
+    <thead>
+      <tr>
+        <th>Order</th>
+        <th>Type</th>
+        <th>Security</th>
+        <th class="num">Quantity</th>
+        <th class="num">Amount</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let order of recentOrders" class="row-link" [routerLink]="['/orders', order.id]">
+        <td>{{ order.orderNumber }}</td>
+        <td>{{ order.orderType }}</td>
+        <td>{{ order.security.company.legalName }}</td>
+        <td class="num">{{ order.quantity }}</td>
+        <td class="num">{{ order.currency }} {{ order.grossAmount | number: '1.0-2' }}</td>
+        <td><app-status-badge [status]="order.status" /></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #empty>
+    <div class="empty-state" *ngIf="!loading">No orders yet — create the first one to get started.</div>
+  </ng-template>
+</div>

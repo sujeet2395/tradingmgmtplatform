@@ -1,0 +1,58 @@
+<div class="page-header">
+  <div>
+    <h1>Customers</h1>
+    <div class="subtitle">Buyers, sellers, and brokers across all orders</div>
+  </div>
+  <button class="btn btn-primary" (click)="showForm = !showForm">
+    {{ showForm ? 'Cancel' : '+ New customer' }}
+  </button>
+</div>
+
+<div class="error-banner" *ngIf="error">{{ error }}</div>
+
+<div class="card" *ngIf="showForm">
+  <h2>New customer</h2>
+  <div class="form-grid">
+    <div class="field">
+      <label>Full name</label>
+      <input [(ngModel)]="form.fullName" placeholder="Jane Doe" />
+    </div>
+    <div class="field">
+      <label>Phone (optional)</label>
+      <input [(ngModel)]="form.phone" placeholder="+91 90000 00000" />
+    </div>
+    <div class="field">
+      <label>Email (optional)</label>
+      <input [(ngModel)]="form.email" placeholder="jane@example.com" />
+    </div>
+  </div>
+  <div class="actions-row">
+    <button class="btn btn-primary" [disabled]="submitting || !form.fullName.trim()" (click)="submit()">
+      Save customer
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <table *ngIf="customers.length; else empty">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>KYC</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of customers" class="row-link" [routerLink]="['/customers', c.id]">
+        <td>{{ c.fullName }}</td>
+        <td>{{ c.phone || '—' }}</td>
+        <td>{{ c.email || '—' }}</td>
+        <td>{{ c.kycVerified ? 'Verified' : 'Not verified' }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <ng-template #empty>
+    <div class="empty-state" *ngIf="!loading">No customers yet — add a buyer or seller to create an order.</div>
+  </ng-template>
+</div>

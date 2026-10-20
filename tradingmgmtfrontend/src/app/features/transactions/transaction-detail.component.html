@@ -1,0 +1,206 @@
+<ng-container *ngIf="transaction as txn">
+  <div class="page-header">
+    <div>
+      <h1>{{ txn.transactionNumber }}</h1>
+      <div class="subtitle">
+        Settlement for order
+        <a [routerLink]="['/orders', txn.order.id]">{{ txn.order.orderNumber }}</a>
+        — {{ txn.security.company.legalName }}
+      </div>
+    </div>
+    <app-status-badge [status]="txn.status" />
+  </div>
+
+  <div class="error-banner" *ngIf="error">{{ error }}</div>
+
+  <div class="card">
+    <div class="kv-grid">
+      <div>
+        <div class="kv-label">Quantity</div>
+        <div class="kv-value">{{ txn.quantity }}</div>
+      </div>
+      <div>
+        <div class="kv-label">Agreed price</div>
+        <div class="kv-value">{{ txn.agreedPrice | number: '1.0-2' }}</div>
+      </div>
+      <div>
+        <div class="kv-label">Total amount</div>
+        <div class="kv-value">{{ txn.totalAmount | number: '1.0-2' }}</div>
+      </div>
+      <div *ngIf="txn.settledAt">
+        <div class="kv-label">Settled at</div>
+        <div class="kv-value">{{ txn.settledAt | date: 'medium' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Payment</h2>
+      <app-status-badge *ngIf="payment" [status]="payment.status" />
+    </div>
+
+    <ng-container *ngIf="!payment">
+      <p>No payment has been initiated for this transaction yet.</p>
+      <div class="field" style="max-width: 240px;">
+        <label>Amount</label>
+        <input type="number" [(ngModel)]="paymentForm.amount" />
+      </div>
+      <div class="actions-row">
+        <button class="btn btn-primary" [disabled]="busy || !paymentForm.amount" (click)="initiatePayment()">
+          Initiate payment
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="payment as p">
+      <div class="kv-grid">
+        <div>
+          <div class="kv-label">Amount</div>
+          <div class="kv-value">{{ p.amount | number: '1.0-2' }}</div>
+        </div>
+        <div>
+          <div class="kv-label">Method</div>
+          <div class="kv-value">{{ p.paymentMethod }}</div>
+        </div>
+        <div *ngIf="p.chequeNumber">
+          <div class="kv-label">Cheque number</div>
+          <div class="kv-value">{{ p.chequeNumber }}</div>
+        </div>
+        <div *ngIf="p.bankName">
+          <div class="kv-label">Bank</div>
+          <div class="kv-value">{{ p.bankName }}</div>
+        </div>
+        <div *ngIf="p.depositDate">
+          <div class="kv-label">Deposited</div>
+          <div class="kv-value">{{ p.depositDate }}</div>
+        </div>
+        <div *ngIf="p.confirmationDate">
+          <div class="kv-label">Verified</div>
+          <div class="kv-value">{{ p.confirmationDate }}</div>
+        </div>
+      </div>
+
+      <!-- PAYMENT_PENDING: capture cheque -->
+      <div *ngIf="p.status === 'PAYMENT_PENDING'">
+        <div class="section-title">Record the cheque</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Cheque number</label>
+            <input [(ngModel)]="chequeForm.chequeNumber" placeholder="123456" />
+          </div>
+          <div class="field">
+            <label>Bank (optional)</label>
+            <input [(ngModel)]="chequeForm.bankName" placeholder="HDFC Bank" />
+          </div>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-primary" [disabled]="busy || !chequeForm.chequeNumber.trim()" (click)="markChequeReceived()">
+            Mark cheque received
+          </button>
+        </div>
+      </div>
+
+      <!-- CHEQUE_RECEIVED: deposit -->
+      <div class="actions-row" *ngIf="p.status === 'CHEQUE_RECEIVED'">
+        <button class="btn btn-primary" [disabled]="busy" (click)="markChequeDeposited()">
+          Mark cheque deposited
+        </button>
+      </div>
+
+      <!-- CHEQUE_DEPOSITED / CHEQUE_CLEARED: verify -->
+      <div *ngIf="p.status === 'CHEQUE_DEPOSITED' || p.status === 'CHEQUE_CLEARED'">
+        <p style="font-size: 13px;">Verifying a payment is a finance-role action — this claims the funds have actually cleared, not just that the customer said so.</p>
+        <div class="actions-row">
+          <button class="btn btn-primary" [disabled]="busy" (click)="verifyPayment()">
+            Verify payment
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- SHARE TRANSFER -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Share transfer</h2>
+      <app-status-badge *ngIf="transfer" [status]="transfer.status" />
+    </div>
+
+    <ng-container *ngIf="!transfer">
+      <p *ngIf="txn.status === 'PAYMENT_VERIFIED'">Payment is verified — ready to initiate the share transfer.</p>
+      <p *ngIf="txn.status !== 'PAYMENT_VERIFIED'">The share transfer can be initiated once payment is verified.</p>
+      <div class="actions-row">
+        <button class="btn btn-primary" [disabled]="busy || txn.status !== 'PAYMENT_VERIFIED'" (click)="initiateTransfer()">
+          Initiate transfer
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="transfer as tr">
+      <div class="kv-grid">
+        <div>
+          <div class="kv-label">Quantity</div>
+          <div class="kv-value">{{ tr.quantity }}</div>
+        </div>
+        <div *ngIf="tr.initiatedDate">
+          <div class="kv-label">Initiated</div>
+          <div class="kv-value">{{ tr.initiatedDate }}</div>
+        </div>
+        <div *ngIf="tr.submittedDate">
+          <div class="kv-label">Submitted</div>
+          <div class="kv-value">{{ tr.submittedDate }}</div>
+        </div>
+        <div *ngIf="tr.completedDate">
+          <div class="kv-label">Completed</div>
+          <div class="kv-value">{{ tr.completedDate }}</div>
+        </div>
+        <div *ngIf="tr.rejectionReason">
+          <div class="kv-label">Rejection reason</div>
+          <div class="kv-value">{{ tr.rejectionReason }}</div>
+        </div>
+      </div>
+
+      <div class="actions-row" *ngIf="tr.status === 'TRANSFER_PENDING' || tr.status === 'DOCUMENTS_VERIFIED'">
+        <button class="btn btn-primary" [disabled]="busy" (click)="submitTransfer()">Submit transfer</button>
+        <button class="btn btn-danger" [disabled]="busy" (click)="showRejectTransferForm = !showRejectTransferForm">Reject transfer</button>
+      </div>
+
+      <div class="actions-row" *ngIf="tr.status === 'TRANSFER_SUBMITTED' || tr.status === 'TRANSFER_IN_PROCESS'">
+        <button class="btn btn-primary" [disabled]="busy" (click)="completeTransfer()">Complete transfer</button>
+        <button class="btn btn-danger" [disabled]="busy" (click)="showRejectTransferForm = !showRejectTransferForm">Reject transfer</button>
+      </div>
+
+      <div class="card" *ngIf="showRejectTransferForm" style="margin-top: 14px; background: var(--paper);">
+        <div class="field">
+          <label>Reason for rejection</label>
+          <input [(ngModel)]="rejectTransferReason" placeholder="Documents incomplete" />
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-danger" [disabled]="busy || !rejectTransferReason.trim()" (click)="rejectTransfer()">
+            Confirm rejection
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  
+  <app-documents-panel title="Transaction documents" entityType="Transaction" [entityId]="txn.id"
+    [categories]="['CHEQUE_EVIDENCE','PAYMENT_PROOF','TRANSFER_FORM','TRANSFER_CONFIRMATION','AGREEMENT','OTHER']" />
+
+  <div class="card" *ngIf="auditLog.length">
+    <h2>Audit trail</h2>
+    <div class="audit-list">
+      <div class="audit-item" *ngFor="let entry of auditLog">
+        <div class="audit-time">{{ entry.occurredAt | date: 'MMM d, HH:mm' }}</div>
+        <div>
+          <div class="audit-action">{{ entry.action }}</div>
+          <div class="audit-reason" *ngIf="entry.reason">{{ entry.reason }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<div class="empty-state" *ngIf="loading">Loading transaction…</div>

@@ -1,0 +1,68 @@
+<div class="page-header">
+  <div>
+    <h1>New order</h1>
+    <div class="subtitle">Capture the buyer/seller intention before settlement begins</div>
+  </div>
+  <a routerLink="/orders" class="btn btn-secondary">Cancel</a>
+</div>
+
+<div class="error-banner" *ngIf="error">{{ error }}</div>
+
+<div class="card">
+  <div class="form-grid">
+    <div class="field">
+      <label>Order type</label>
+      <select [(ngModel)]="form.orderType">
+        <option value="BUY">Buy</option>
+        <option value="SELL">Sell</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Security</label>
+      <select [(ngModel)]="form.securityId">
+        <option value="" disabled selected>Select a security</option>
+        <option *ngFor="let s of securities" [value]="s.id">
+          {{ s.company.legalName }} — {{ s.shareClass || s.securityType }}
+        </option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Buyer (optional)</label>
+      <select [(ngModel)]="form.buyerCustomerId">
+        <option value="">Not set yet</option>
+        <option *ngFor="let c of customers" [value]="c.id">{{ c.fullName }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Seller (optional)</label>
+      <select [(ngModel)]="form.sellerCustomerId">
+        <option value="">Not set yet</option>
+        <option *ngFor="let c of customers" [value]="c.id">{{ c.fullName }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Quantity</label>
+      <input type="number" [(ngModel)]="form.quantity" placeholder="2000" />
+    </div>
+    <div class="field">
+      <label>Price per share</label>
+      <input type="number" [(ngModel)]="form.pricePerShare" placeholder="1250" />
+    </div>
+    <div class="field">
+      <label>Order date</label>
+      <input type="date" [(ngModel)]="form.orderDate" />
+    </div>
+    <div class="field">
+      <label>Notes (optional)</label>
+      <input [(ngModel)]="form.notes" placeholder="Delivered via broker X" />
+    </div>
+  </div>
+
+  <div class="section-title" *ngIf="grossAmount as gross">Gross amount: {{ gross | number: '1.0-2' }}</div>
+
+  <div class="actions-row">
+    <button class="btn btn-primary" [disabled]="!canSubmit || submitting" (click)="submit()">
+      Create order
+    </button>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="card">
+  <div class="card-header"><h2>{{ title }}</h2></div>
+  <div class="error-banner" *ngIf="error">{{ error }}</div>
+
+  <table *ngIf="docs.length; else none">
+    <thead><tr><th>File</th><th>Type</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <ng-container *ngFor="let d of docs">
+        <tr>
+          <td>
+            <a [href]="href(d)" target="_blank">{{ d.currentVersion.fileName }}</a>
+            <div class="kv-label" *ngIf="d.currentVersion.verificationNote">{{ d.currentVersion.verificationNote }}</div>
+          </td>
+          <td>{{ d.category.replace('_', ' ') | titlecase }}</td>
+          <td><app-status-badge [status]="d.currentVersion.verificationStatus" /></td>
+          <td class="num">
+            <ng-container *ngIf="d.currentVersion.verificationStatus === 'PENDING'">
+              <button class="btn btn-primary btn-sm" (click)="verify(d)">Verify document</button>
+              <button class="btn btn-danger btn-sm" (click)="rejectingId = d.id">Reject document</button>
+            </ng-container>
+          </td>
+        </tr>
+        <tr *ngIf="rejectingId === d.id">
+          <td colspan="4">
+            <input [(ngModel)]="rejectNote" placeholder="Reason for rejection" />
+            <div class="actions-row">
+              <button class="btn btn-danger btn-sm" (click)="reject(d)">Confirm rejection</button>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+  <ng-template #none><div class="empty-state">No documents uploaded yet.</div></ng-template>
+
+  <div class="section-title">Upload a document</div>
+  <div class="form-grid">
+    <div class="field">
+      <label>Document type</label>
+      <select [(ngModel)]="category">
+        <option *ngFor="let c of categories" [value]="c">{{ c.replace('_', ' ') | titlecase }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>File (PDF, JPG or PNG)</label>
+      <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onFile($event)" />
+    </div>
+  </div>
+  <div class="actions-row">
+    <button class="btn btn-primary" [disabled]="busy || !file" (click)="upload(fileInput)">Upload document</button>
+  </div>
+</div>

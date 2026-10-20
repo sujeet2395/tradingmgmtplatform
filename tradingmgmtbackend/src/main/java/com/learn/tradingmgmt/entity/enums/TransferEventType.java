@@ -1,0 +1,6 @@
+package com.learn.tradingmgmt.entity.enums;
+
+public enum TransferEventType {
+    DOCUMENTS_UPLOADED, DOCUMENTS_VERIFIED, TRANSFER_INITIATED,
+    TRANSFER_SUBMITTED, TRANSFER_COMPLETED, TRANSFER_REJECTED
+}

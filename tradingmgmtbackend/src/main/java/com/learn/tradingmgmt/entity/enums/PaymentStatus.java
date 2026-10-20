@@ -1,0 +1,6 @@
+package com.learn.tradingmgmt.entity.enums;
+
+public enum PaymentStatus {
+    PAYMENT_PENDING, CHEQUE_RECEIVED, CHEQUE_DEPOSITED, CHEQUE_CLEARED,
+    PAYMENT_CONFIRMED, PAYMENT_FAILED, PAYMENT_CANCELLED
+}

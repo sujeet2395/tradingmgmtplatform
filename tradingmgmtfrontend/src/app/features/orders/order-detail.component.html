@@ -1,0 +1,87 @@
+<ng-container *ngIf="order">
+  <div class="page-header">
+    <div>
+      <h1>{{ order.orderNumber }}</h1>
+      <div class="subtitle">{{ order.orderType === 'BUY' ? 'Buy' : 'Sell' }} order — {{ order.security.company.legalName }}</div>
+    </div>
+    <app-status-badge [status]="order.status" />
+  </div>
+
+  <div class="error-banner" *ngIf="error">{{ error }}</div>
+
+  <div class="card">
+    <div class="kv-grid">
+      <div>
+        <div class="kv-label">Security</div>
+        <div class="kv-value">{{ order.security.company.legalName }} ({{ order.security.shareClass || order.security.securityType }})</div>
+      </div>
+      <div>
+        <div class="kv-label">Quantity</div>
+        <div class="kv-value">{{ order.quantity }}</div>
+      </div>
+      <div>
+        <div class="kv-label">Price per share</div>
+        <div class="kv-value">{{ order.currency }} {{ order.pricePerShare | number: '1.0-2' }}</div>
+      </div>
+      <div>
+        <div class="kv-label">Gross amount</div>
+        <div class="kv-value">{{ order.currency }} {{ order.grossAmount | number: '1.0-2' }}</div>
+      </div>
+      <div>
+        <div class="kv-label">Buyer</div>
+        <div class="kv-value">{{ order.buyerCustomer?.fullName || 'Not set' }}</div>
+      </div>
+      <div>
+        <div class="kv-label">Seller</div>
+        <div class="kv-value">{{ order.sellerCustomer?.fullName || 'Not set' }}</div>
+      </div>
+      <div>
+        <div class="kv-label">Order date</div>
+        <div class="kv-value">{{ order.orderDate }}</div>
+      </div>
+      <div *ngIf="order.notes">
+        <div class="kv-label">Notes</div>
+        <div class="kv-value">{{ order.notes }}</div>
+      </div>
+    </div>
+
+    <div class="actions-row" *ngIf="order.status === 'ORDER_RECEIVED'">
+      <button class="btn btn-primary" [disabled]="busy" (click)="verify()">Verify order</button>
+      <button class="btn btn-danger" [disabled]="busy" (click)="showRejectForm = !showRejectForm">Reject order</button>
+    </div>
+
+    <div class="actions-row" *ngIf="order.status === 'ORDER_VERIFIED'">
+      <button class="btn btn-primary" [disabled]="busy" (click)="confirm()">Confirm order</button>
+      <button class="btn btn-danger" [disabled]="busy" (click)="showRejectForm = !showRejectForm">Reject order</button>
+    </div>
+
+    <div class="actions-row" *ngIf="order.status === 'ORDER_CONFIRMED' && transactionId">
+      <button class="btn btn-primary" (click)="goToTransaction()">Go to settlement →</button>
+    </div>
+
+    <div class="card" *ngIf="showRejectForm" style="margin-top: 14px; background: var(--paper);">
+      <div class="field">
+        <label>Reason for rejection</label>
+        <input [(ngModel)]="rejectReason" placeholder="Buyer withdrew" />
+      </div>
+      <div class="actions-row">
+        <button class="btn btn-danger" [disabled]="busy" (click)="reject()">Confirm rejection</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="auditLog.length">
+    <h2>Audit trail</h2>
+    <div class="audit-list">
+      <div class="audit-item" *ngFor="let entry of auditLog">
+        <div class="audit-time">{{ entry.occurredAt | date: 'MMM d, HH:mm' }}</div>
+        <div>
+          <div class="audit-action">{{ entry.action }}</div>
+          <div class="audit-reason" *ngIf="entry.reason">{{ entry.reason }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<div class="empty-state" *ngIf="loading">Loading order…</div>

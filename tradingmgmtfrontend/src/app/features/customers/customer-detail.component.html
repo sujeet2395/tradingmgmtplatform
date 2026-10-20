@@ -1,0 +1,27 @@
+<ng-container *ngIf="customer as c">
+  <div class="page-header">
+    <div>
+      <h1>{{ c.fullName }}</h1>
+      <div class="subtitle"><a routerLink="/customers">Customers</a></div>
+    </div>
+    <app-status-badge [status]="c.kycVerified ? 'VERIFIED' : 'PENDING'" />
+  </div>
+
+  <div class="error-banner" *ngIf="error">{{ error }}</div>
+
+  <div class="card">
+    <div class="kv-grid">
+      <div><div class="kv-label">Phone</div><div class="kv-value">{{ c.phone || '—' }}</div></div>
+      <div><div class="kv-label">Email</div><div class="kv-value">{{ c.email || '—' }}</div></div>
+      <div><div class="kv-label">KYC</div><div class="kv-value">{{ c.kycVerified ? 'Verified' : 'Not verified' }}</div></div>
+    </div>
+    <div class="actions-row">
+      <button class="btn btn-primary" *ngIf="!c.kycVerified" (click)="setKyc(true)">Mark KYC verified</button>
+      <button class="btn btn-danger" *ngIf="c.kycVerified" (click)="setKyc(false)">Revoke KYC</button>
+    </div>
+  </div>
+
+  <app-documents-panel title="KYC documents" entityType="Customer"
+                       [entityId]="c.id" [categories]="['KYC']" />
+</ng-container>
+<div class="error-banner" *ngIf="error && !customer">{{ error }}</div>
